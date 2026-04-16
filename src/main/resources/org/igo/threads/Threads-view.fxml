@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextField?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.igo.threads.ThreadsController"
+      spacing="15"
+      alignment="CENTER"
+      prefWidth="650"
+      prefHeight="450">
+
+    <padding>
+        <Insets top="20" right="30" bottom="20" left="30"/>
+    </padding>
+
+    <Label text="Вычисления в отдельном потоке"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Количество шагов:"
+               style="-fx-font-size: 14px;"/>
+        <TextField fx:id="stepsField"
+                   text="100"
+                   prefWidth="120"
+                   promptText="100 — 500"/>
+    </HBox>
+
+    <Separator/>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="mainBtn"
+                text="Запуск в основном потоке"
+                onAction="#onMainThreadBtn"
+                prefWidth="280"
+                style="-fx-font-size: 14px;"/>
+
+        <Button fx:id="separateBtn"
+                text="Запуск в отдельном потоке"
+                onAction="#onSeparateThreadBtn"
+                prefWidth="280"
+                style="-fx-font-size: 14px;"/>
+    </HBox>
+
+    <ProgressBar fx:id="progressBar"
+                 prefWidth="500"
+                 prefHeight="25"
+                 style="-fx-accent: #3498db;"/>
+
+    <Label fx:id="statusLabel"
+           text="Готов к запуску"
+           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+
+    <Button fx:id="cancelBtn"
+            text="Остановить"
+            onAction="#onCancel"
+            prefWidth="220"
+            style="-fx-font-size: 14px; -fx-base: #e74c3c;"/>
+
+    <Label fx:id="resultLabel"
+           text="Результат: —"
+           style="-fx-font-size: 15px; -fx-font-family: monospace;"/>
+
+    <Label text="задача: симуляция обработки большого массива (заполнение + сумма)"
+           style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+
+</VBox>
