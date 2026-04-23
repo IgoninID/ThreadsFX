@@ -69,7 +69,7 @@
            text="Результат: —"
            style="-fx-font-size: 15px; -fx-font-family: monospace;"/>
 
-    <Label text="задача: симуляция обработки большого массива (заполнение + сумма)"
+    <Label text="задача: обработка большого массива (заполнение + сумма)"
            style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
 
 </VBox>

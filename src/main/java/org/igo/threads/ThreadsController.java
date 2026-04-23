@@ -9,8 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 
-// TODO Работа с реальным массивом а не имитация
-
 /**
  * Контроллер для демонстрации работы с потоками:
  * - Запуск тяжёлых вычислений в основном потоке
@@ -53,18 +51,22 @@ public class ThreadsController {
         resultLabel.setText("Результат: -");
 
         int steps = parseSteps(); // Получаем количество шагов из поля
-        double sum = 0.0;
         long start = System.currentTimeMillis();
+        int size = getArraySize();
+        double[] array = new double[size];
+        double sum = 0.0;
 
-        for (int i = 0; i < steps; i++) { // Симуляция тяжёлой работы с большим массивом
-            try {
-                Thread.sleep(50); // Искусственная задержка
-            } catch (InterruptedException ignored) {}
-
-            sum += Math.random() * 1000; // Имитация операции с элементами массива
+        for (int i = 0; i < size; i++) {
+            array[i] = Math.random() * 1000;
         }
 
-        statusLabel.setText("Завершено в основном потоке (" + (System.currentTimeMillis() - start) + " мс)");
+        for (int i = 0; i < size; i++) {
+            sum += array[i];
+        }
+
+        long duration = System.currentTimeMillis() - start;
+
+        statusLabel.setText("Завершено в основном потоке (" + duration + " мс)");
         resultLabel.setText("Результат: сумма = " + String.format("%.2f", sum));
         progressBar.setProgress(1.0);
 
@@ -88,7 +90,7 @@ public class ThreadsController {
         currentTask = createBackgroundTask(); // Создаём задачу
 
         // Привязываем свойства Task к элементам интерфейса
-        // (обновление будет происходить автоматически в JavaFX потоке)
+        // обновление будет происходить автоматически в JavaFX потоке
         progressBar.progressProperty().bind(currentTask.progressProperty());
         statusLabel.textProperty().bind(currentTask.messageProperty());
 
@@ -97,7 +99,7 @@ public class ThreadsController {
         currentTask.setOnCancelled(e -> onTaskCancelled());
         currentTask.setOnFailed(e -> onTaskFailed());
 
-        new Thread(currentTask, "Background-Task").start(); // Запускаем задачу в отдельном потоке
+        new Thread(currentTask, "ArraySum").start(); // Запускаем задачу в отдельном потоке
     }
 
     /**
@@ -108,28 +110,51 @@ public class ThreadsController {
         return new Task<>() {
             @Override
             protected Double call() throws Exception {
-                int steps = parseSteps();
+                int size = getArraySize();
+                double[] array = new double[size];
                 double sum = 0.0;
 
-                updateProgress(0, steps);
-                updateMessage("Подготовка массива...");
+                updateMessage("Создаем массив размером "+ size + " элементов...");
+                updateProgress(0, size * 2);
 
-                for (int i = 0; i < steps; i++) { // Основной цикл вычислений (имитация обработки массива)
+                long Fillstart = System.currentTimeMillis();
+                for (int i = 0; i < size; i++) {
+                    if (isCancelled()) {
+                        updateMessage("Задача отменена пользователем");
+                        return sum;
+                    }
+
+                    array[i] = Math.random() * 1000;
+
+                    if (i % 500000 == 0 || i == size - 1) {
+                        updateProgress(i, size * 2);
+                        updateMessage(String.format("Заполнение массива: %d из %d (%.1f%%", i, size, (i*100.0)/size));
+                    }
+                }
+                long Filltime = (System.nanoTime() - Fillstart) / 1000000;
+
+
+                updateMessage("Подсчет суммы элементов массива...");
+                long Sumstart = System.currentTimeMillis();
+
+                for (int i = 0; i < size; i++) { // Основной цикл вычислений
                     if (isCancelled()) { // Проверяем, не была ли задача отменена пользователем
-                        updateMessage("Задача отменена");
+                        updateMessage("Задача отменена пользователем");
                         return sum; // возвращаем то, что успели посчитать
                     }
 
-                    Thread.sleep(50); // имитация длительной операции
-                    sum += Math.random() * 1000; // операция с элементом массива
+                    sum += array[i]; // операция с элементом массива
 
                     // Обновляем прогресс и сообщение
-                    updateProgress(i + 1, steps);
-                    updateMessage(String.format("Шаг %d / %d  (%.0f%%)",
-                            i + 1, steps, (i + 1.0) / steps * 100));
+                    if (i % 500000 == 0 || i == size - 1) {
+                        int total = size + i;
+                        updateProgress(total, size * 2);
+                        updateMessage(String.format("Подсчет суммы: %d из %d (%.1f%%)", i, size, (i*100.0)/size));
+                    }
                 }
+                long Sumtime = (System.nanoTime() - Sumstart) / 1000000;
 
-                updateMessage("Вычисления успешно завершены");
+                updateMessage(String.format("Вычисления успешно завершены Заполнение: %d мс, Сумма: %d мс", Filltime, Sumtime));
                 return sum;
             }
         };
@@ -186,6 +211,15 @@ public class ThreadsController {
         mainBtn.setDisable(true);
         separateBtn.setDisable(true);
         cancelBtn.setDisable(false); // разрешаем остановку
+    }
+
+    private int getArraySize() {
+        try {
+            int millions = Integer.parseInt(stepsField.getText().trim());
+            return millions*1000000;
+        } catch (Exception e) {
+            return 50000000;
+        }
     }
 
     /**
