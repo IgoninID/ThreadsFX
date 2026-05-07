@@ -26,7 +26,7 @@
            style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Количество шагов:"
+        <Label text="Количество элементов массива (миллионов):"
                style="-fx-font-size: 14px;"/>
         <TextField fx:id="stepsField"
                    text="100"
